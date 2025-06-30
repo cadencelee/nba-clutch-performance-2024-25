@@ -87,6 +87,6 @@ SELECT * , (points_per_36 - min_pts)/(max_pts - min_pts) AS pts_scaled
 FROM player_info CROSS JOIN stat_bounds;
 
 ## Calculate each players clutch value using personalized "clutch formula"
-SELECT PLAYER_NAME, ((0.35*pts_scaled) + (0.20*FGM_PCT) + (0.10*FT_PCT) - (0.10*turnovers_scaled) + (0.15*plusminus_scaled)+(0.10*assists_scaled)) AS clutch_rating
+SELECT PLAYER_NAME, ((0.30*pts_scaled) + (0.20*FGM_PCT) + (0.10*FT_PCT) - (0.15*turnovers_scaled) + (0.15*plusminus_scaled)+(0.10*assists_scaled)) AS clutch_rating
 FROM scaled
 ORDER BY clutch_rating DESC;
