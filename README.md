@@ -2,7 +2,7 @@
 A data-driven project to find the most clutch NBA players in the 2024–2025 season using SQL and Python for visualization.
 
 ## Project Overview
-This project investigates which NBA players were most "clutch" during the 2024–2025 season using the NBA's definition: performance in the last 5 minutes of the 4th quarter or overtime, with a point differential of 5 or fewer. Instead of just analyzing "who scored the most in clutch time", I aim to look at the full picture of clutch performances and take into account different factors that play a role in a player's overall impact—such as efficiency, usage rate, minutes played, game context, and performance under pressure in close or high-stakes situations. While points per 36 minutes in clutch moments gives a basic snapshot of scoring output, it doesn’t tell the full story of a player’s impact in high-pressure situations. Clutch performance is about more than just how many points a player scores — it’s about how efficiently they score, how they contribute to winning, and how well they handle pressure.
+This project investigates which NBA players were most "clutch" during the 2024–2025 season using the NBA's definition: performance in the last 5 minutes of the 4th quarter or overtime, with a point differential of 5 or fewer. Instead of just analyzing who scored the most in clutch time, I aim to look at the full picture of clutch performances and take into account different factors that play a role in a player's overall impact—such as efficiency, usage rate, minutes played, game context, and performance under pressure in close or high-stakes situations. While points per 36 minutes in clutch moments gives a basic snapshot of scoring output, it doesn’t tell the full story of a player’s impact in high-pressure situations. Clutch performance is about more than just how many points a player scores — it’s about how efficiently they score, how they contribute to winning, and how well they handle pressure.
 
 That’s why I’m building a weighted equation that takes into account a broader set of metrics, such as:
 - Field Goal % and Free Throw % – Are they efficient and reliable under pressure?
@@ -17,7 +17,7 @@ This equation creates a more complete, fair, and context-rich picture of clutch 
 - GitHub (documentation and sharing)
 
 ## Key Steps
-1. Define clutch criteria (using NBA definition) and what the 2024-25 season is composed of (regular season, play in, and playoffs) 
+1. Define clutch criteria (using NBA definition) and what the 2024-25 season is composed of (regular season + play in + playoffs) 
 2. Data Collection
 - Pulled regular season and playoff clutch data using nba_api in Python (Per Mode set to Totals)
 - Manually collected Play-In clutch stats from nba.com/stats into Excel
@@ -34,7 +34,7 @@ This equation creates a more complete, fair, and context-rich picture of clutch 
 - Merged the three tables into "clutch_2024_25" combined dataset to get the full 2024-25 season picture
 6. Statistical Normalization
 - Normalized key performance stats per 36 minutes to control for differing minutes played
-- Calculated FG% and FT% across the entire season
+- Calculated FG% and FT% across the entire season for each player 
 7. Min-Max Normalization
 - Normalized per 36 minutes stats to be on a 0 to 1 scale using min max normlization so each metric has equal opportunity to influence the final score 
 - Formula for Min-Max Normalization: x(normalized) = (x - min(x))/(max(x)-min(x))
@@ -50,9 +50,9 @@ Instead of just looking at points added in clutch minutes, I will take into acco
 1. Points per 36 (normalize per 36) - How many points the player scores in clutch time	
 2. FG% - Are they efficient?	
 3. FT% - How do they perform under pressure ("free" points) 
-4. Turnovers per 36 (normalize per 36) - (subtract)
-5. Plus minus per 36 (normalize per 36) - the point difference when a player is on the court
-6. Assists per 36 (normalize per 36)
+4. Turnovers per 36 (normalize per 36) - (subtract) How many errors did they make in critical moments
+5. Plus minus per 36 (normalize per 36) - The point difference when a player is on the court
+6. Assists per 36 (normalize per 36) - How well a player creates scoring opportunities under pressure
 
 ## Weight of metrics for "clutch rating" formula 
 1. Points per 36: 30%
@@ -63,10 +63,13 @@ Instead of just looking at points added in clutch minutes, I will take into acco
 6. Assists per 36: 10%
    
 ## Accounting for Fair Comparisons
-Not all players have the same number of clutch minutes or opportunities, so to make comparisons meaningful we need to scale data to the same level. If we don’t adjust for time, we're basically rewarding opportunity, not efficiency. Solution: normalize on 36 minute basis (NBA common baseline) 
+Not all players have the same number of clutch minutes or opportunities, so to make comparisons meaningful we need to scale data to the same level. If we don’t adjust for time, we're basically rewarding opportunity, not efficiency.
+Solution: normalize on 36 minute basis (NBA common baseline) 
+Setback: Some players who got very little clutch minutes in the season were rising to the top of the leaderboard because the mere fact that they made a few shots in limited minutes made their per-36 stats look elite. For example, scoring 4 points in 5 minutes translates to 28.8 points per 36, which looks amazing — but it's based on almost no sample
+Adjustment: To prevent misleading results from tiny sample sizes, I applied a minimum threshold of 20 total clutch minutes. This ensures that only players with a reasonable amount of clutch exposure are included in the analysis. It helps filter out statistical noise and keeps the leaderboard focused on players who had sustained impact in clutch moments — not just one-off performances.
 
 ## Normalization: Clutch volume stats will be normalized by minutes played (e.g., points per 36 clutch minutes)
-What normalization does: It puts everyone on a level playing field as if they each played the same amount of time (36 minutes). 36 minutes is standard because it’s close to a full NBA game.
+What normalization does: It puts everyone on a level playing field as if they each played the same amount of time (36 minutes). 36 minutes is standard because it’s close to a full NBA game. This makes sure we aren't just rewarding volume in calculations and taking into account opportunities and how well players were able to convert given the opportunties they had.
 EX: SUM(points) → total clutch points scored
     SUM(clutch_minutes) → total clutch minutes played
     (SUM(points) / SUM(clutch_minutes)) * 36 AS points_per_36 
@@ -75,7 +78,7 @@ EX: SUM(points) → total clutch points scored
 ## Efficiency vs. Volume: Both volume (e.g., total clutch points) and efficiency (e.g., FG%) will be considered to capture players who are consistently reliable — not just those who take a lot of shots.
 This approach ensures that the final clutch rankings reflect meaningful performance rather than raw totals or cherry-picked stats
 
-## MinMax Normalization
+## Min-Max Normalization
 Putting everything on a 0-1 scale to be able to compare percentages to Per 36 metric
 
 ## Folder Structure
